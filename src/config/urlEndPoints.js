@@ -1,4 +1,4 @@
-const serverURL = 'www.themealdb.com';
+const serverURL = 'https://www.themealdb.com';
 
 export const url = {
   localApiUrl: serverURL,

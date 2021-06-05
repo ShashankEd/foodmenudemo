@@ -9,13 +9,18 @@ import {
     Dimensions,
     TextInput
 } from 'react-native';
+import { useDispatch, useSelector } from "react-redux";
+import  {getFoodList} from '../store/reducers/foodList';
 
 const ENDPOINT = "https://jsonplaceholder.typicode.com/todos/";
 
 function FoodListComponentHook() {
     const [items,setItems] = useState([]);
     const [isloading,setIsLoading] = useState(true);
-    const [errorAPI, setError] = useState(false)
+    const [errorAPI, setError] = useState(false);
+    const getFoodListResponse = useSelector(state=> state.getFoodList.response);
+    const dispatch = useDispatch();
+
     useEffect(() => {
         //here we'll make the api call
         console.log("use effect");
@@ -32,6 +37,12 @@ function FoodListComponentHook() {
                 setIsLoading(false);
             })
         }
+        const loadFoodList = async () => {
+            await dispatch(getFoodList.fetchCall({f:"a"},{f:"a"}));
+            console.log("getFoodListResponse ", getFoodListResponse);
+            setIsLoading(false);
+        };
+        loadFoodList();
     },[]);
 
    const renderHeader = () => {

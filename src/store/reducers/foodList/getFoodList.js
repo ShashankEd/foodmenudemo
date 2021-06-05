@@ -14,7 +14,7 @@ class getFoodListData extends StoreFetchableData {
         })
         .catch((err) => {
           dispatch(this.actions.error(err));
-          showSnackBar(err);
+          console.log(err)
         });
   }
 }
