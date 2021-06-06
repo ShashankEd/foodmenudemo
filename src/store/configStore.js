@@ -23,9 +23,6 @@ const rootReducer = (
     //   if (key === 'form') {
     //     state[key] = null;
     //   }
-    if(key === 'getFoodList') {
-      state[key] = null
-    }
     });
   }
 

@@ -1,6 +1,6 @@
 // import { isError } from 'lodash';
 import React from 'react';
-import {useState,useEffect,useCallback} from 'react';
+import {useState,useEffect,useCallback,useMemo} from 'react';
 import {
     FlatList,
     View,
@@ -14,14 +14,16 @@ import {
 import { useDispatch, useSelector,shallowEqual } from "react-redux";
 import  {getFoodList} from '../store/reducers/foodList';
 import FoodListItem from './FoodListItem';
-
+import filter from 'lodash.filter';
 function FoodListComponentHook(props) {
-    const [isloading,setIsLoading] = useState(true);
-    const [errorAPI, setError] = useState(false);
     const getFoodListResponse = useSelector(state=> state.getFoodList.response);
     const dispatch = useDispatch();
-    const [items,setItems] = useState(getFoodListResponse?.getFoodListResponse);
-
+    const [isloading,setIsLoading] = useState(true);
+    const [errorAPI, setError] = useState(false);
+    const [items,setItems] = useState([]);
+    const [query, setQuery] = useState('');
+    
+    //method to handle hardware back button
     const backAction = () => {
       Alert.alert("Hold on!", "Are you sure you want Exit the app?", [
         {
@@ -33,27 +35,49 @@ function FoodListComponentHook(props) {
       ]);
       return true;
     };
-
-    useEffect(() => {
-      //here we'll make the api call
-      const callAPI = async() => {
-        await dispatch(getFoodList.fetchCall({f:"a"},{f:"c"}));
-        setIsLoading(false);
-      };
+    //call the api 
+    const callAPI = async() => {
+      await dispatch(getFoodList.fetchCall({f:"a"},{f:"c"}));
       if(getFoodListResponse) {
-        setItems(getFoodListResponse?.getFoodListResponse);
+        setItems(getFoodListResponse.meals);
+      }
+      setIsLoading(false);
+    };
+
+    //use effect for API call
+    useEffect(async() => {
+      //here we'll make the api call
+      if(getFoodListResponse) {
+        setItems(getFoodListResponse.meals);
         setIsLoading(false);
       } else {
-        callAPI();
-        setItems(getFoodListResponse?.getFoodListResponse);
+        await callAPI();
       }
       const backHandler = BackHandler.addEventListener(
         "hardwareBackPress",
         backAction
       );
        return () => backHandler.remove();
-    },[dispatch]);
-
+    },[]);
+    //method to handle search on flatlist
+    const handleSearch = text => {
+        const formattedQuery = text.toLowerCase();
+        const filteredData = filter(getFoodListResponse.meals, item => {
+          return contains(item.strMeal.toLowerCase(), formattedQuery);
+        });
+        if (filteredData.length>0) {
+          setItems(filteredData);
+        }
+        setQuery(text);
+    };
+    //method to check if substring is there in the string 
+    const contains = (title, query) => {
+      if (title.includes(query)) {
+        return true;
+      }
+      return false;
+    };
+    //method to render the search header of flatlist
     const renderHeader = () => {
           return (
             <View
@@ -67,43 +91,30 @@ function FoodListComponentHook(props) {
               <TextInput
                 autoCapitalize="none"
                 autoCorrect={false}
-                clearButtonMode="always"
-              //   value={query}
-              //   onChangeText={queryText => handleSearch(queryText)}
-                placeholder="Search"
+                value={query}
+                status='info'
+                onChangeText={queryText => handleSearch(queryText)}
+                placeholder="Search your favorite food"
                 style={{ backgroundColor: '#fff', paddingHorizontal: 20 }}
               />
             </View>
           );
     }
-  
-    filterItems = (items) => {
-        const filtered = items.filter((item) => item['completed'])
-        setItems(filtered);
-    }
-
+    //method to handle click or tap on the flat list items
     viewItemDetails =(item) => {
       const  {navigation} = props;
       navigation.navigate('FoodDetailsComponentHook',{item:item});
     }
-
+    //method to handle render flatlist item
     renderItems = ({item}) => {
         return(
-            // <View style={{
-            //     flexDirection:'row',
-            //     marginTop: 10,
-            //     padding: 10,
-            //     alignItems: 'center',
-            //     backgroundColor: '#fff',
-            //     borderColor:'black',
-            //     width: '50%'
-            //   }}>
-            //     <Text style={{fontSize : 15, fontWeight: 'bold'}}>{item['strMeal']}</Text>
-            // </View>
-            <FoodListItem item ={item} viewItemDetails={viewItemDetails}/> 
+            <FoodListItem 
+              item ={item} 
+              viewItemDetails={viewItemDetails}
+            /> 
         )
     };
-
+    //useCallback to get memoized version of renderItems 
     const renderMemoItems = useCallback((item) => renderItems(item),[]);
 
     return(
@@ -112,11 +123,14 @@ function FoodListComponentHook(props) {
               isloading 
               ? <Text>Loading data ......</Text>
               : errorAPI ? <Text>Some network error</Text> 
-                        : <FlatList 
+                        : items && <FlatList 
                             ListHeaderComponent={renderHeader}
                             keyExtractor={item => item.idMeal}
-                            data={getFoodListResponse.meals}
+                            data={items}
                             renderItem={renderMemoItems}
+                            initialNumToRender={5}
+                            maxToRenderPerBatch={10}
+                            windowSize={10}
                         />
           }
       </View>

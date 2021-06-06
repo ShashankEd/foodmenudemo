@@ -6,7 +6,6 @@ import {
     Image,
     ScrollView
 } from 'react-native';
-import { useDispatch, useSelector, shallowEqual } from "react-redux";
 function FoodDetailsComponentHook({navigation, route}) {
     const [item, setItem] = useState(route.params.item);
     return (
