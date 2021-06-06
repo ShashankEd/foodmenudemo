@@ -7,10 +7,10 @@ function SplashHook(props) {
     useEffect (async() => {
         setTimeout(() => {
             navigation.navigate('FoodListComponentHook')
-        })
+        },2000);
     },[])
     return (
-        <View style={{ flex: 1, padding: 24}}></View>
+        <View style={{ flex: 1, backgroundColor:'yellow'}}></View>
     )
 }
 

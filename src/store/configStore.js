@@ -7,6 +7,7 @@ import logger from 'redux-logger';
 import {actionTypes} from './actionTypes';
 import * as reducers from './reducers';
 import storage from 'redux-persist/lib/storage';
+import {getFoodList} from './reducers/foodList'
 const appReducers = {
   ...mapValues(reducers, 'reducers'),
 //   form: formReducer
@@ -22,6 +23,9 @@ const rootReducer = (
     //   if (key === 'form') {
     //     state[key] = null;
     //   }
+    if(key === 'getFoodList') {
+      state[key] = null
+    }
     });
   }
 
@@ -31,7 +35,7 @@ const rootReducer = (
 const persistConfig = {
   key: 'root',
   storage,
-  whitelist: [], // Names of reducers which will be persisted.
+  whitelist: ['getFoodList'], // Names of reducers which will be persisted.
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
