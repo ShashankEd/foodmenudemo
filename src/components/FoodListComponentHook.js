@@ -37,7 +37,7 @@ function FoodListComponentHook(props) {
     };
     //call the api 
     const callAPI = async() => {
-      await dispatch(getFoodList.fetchCall({f:"a"},{f:"c"}));
+      await dispatch(getFoodList.fetchCall({},{f:"c"}));
       if(getFoodListResponse) {
         setItems(getFoodListResponse.meals);
       }
